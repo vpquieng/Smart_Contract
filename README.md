@@ -33,7 +33,7 @@ git clone https://github.com/your-username/Smart_Contract.git
 cd functions_and_errors
 ```
 2. **Compile the Contract**:  
-- Open the TradingCardDistributor.sol file in Remix.
+- Open the functions_and_errors.sol file in Remix.
 - Select Solidity version 0.8.26.
 - Compile the contract.
 3. **Deploy**:  
