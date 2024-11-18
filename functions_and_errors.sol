@@ -36,7 +36,7 @@ contract TradingCardDistributor {
             id: cardCounter,
             name: name,
             price: price, 
-            owner: address(0) // Initially, no owner
+            owner: address(0) 
         });
 
         emit CardMinted(cardCounter, name, price);
