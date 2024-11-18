@@ -1,55 +1,74 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-contract SimpleDeliveryOrder {
-    address public owner;
+contract TradingCardDistributor {
+    address public contractOwner;
+    uint256 public cardCounter;
 
-    struct Order {
+    struct Card {
         uint256 id;
-        address customer;
-        string item;
-        uint256 price;
-        bool isDelivered;
+        string name;
+        uint256 price; 
+        address owner;
     }
 
-    uint256 public orderCount;
-    mapping(uint256 => Order) public orders;
+    mapping(uint256 => Card) private cardCollection;
+
+    event CardMinted(uint256 cardId, string name, uint256 price); 
+    event CardPurchased(uint256 cardId, address newOwner);
+    event FundsWithdrawn(address indexed recipient, uint256 amount);
+
+    modifier onlyOwner() {
+        require(msg.sender == contractOwner, "Access denied: Only the owner can perform this action.");
+        _;
+    }
 
     constructor() {
-        owner = msg.sender; // Set the deployer as the owner
+        contractOwner = msg.sender;
     }
 
-    // Function to place an order
-    function placeOrder(string memory item) public payable {
-        require(msg.value > 0, "Order price must be greater than zero."); // Require a valid payment
-        orderCount++;
-        orders[orderCount] = Order(orderCount, msg.sender, item, msg.value, false);
+    // Mint a new trading card with a specified price
+    function mintCard(string calldata name, uint256 price) external onlyOwner {
+        require(price > 0, "Error: Price must be greater than 0.");
+
+        cardCounter++;
+        cardCollection[cardCounter] = Card({
+            id: cardCounter,
+            name: name,
+            price: price, // Set the price for the card
+            owner: address(0) // Initially, no owner
+        });
+
+        emit CardMinted(cardCounter, name, price);
     }
 
-    // Function to mark an order as delivered (only owner can do this)
-    function deliverOrder(uint256 orderId) public {
-        require(msg.sender == owner, "Only owner can mark as delivered."); // Require sender to be the owner
-        Order storage order = orders[orderId];
-        require(order.id == orderId, "Order does not exist."); // Require valid order ID
-        require(!order.isDelivered, "Order already delivered."); // Require the order is not delivered yet
-        order.isDelivered = true;
+    // Purchase a trading card
+    function purchaseCard(uint256 cardId) external payable {
+        require(cardId > 0 && cardId <= cardCounter, "Error: Invalid card ID.");
+        Card storage card = cardCollection[cardId];
+        require(card.owner == address(0), "Error: This card is already owned.");
+        require(msg.value == card.price, "Error: Exact card price required.");
 
-        // Ensure the order is marked as delivered
-        assert(order.isDelivered == true); // Assert the internal state change
+        card.owner = msg.sender;
+
+        emit CardPurchased(cardId, msg.sender);
     }
 
-    // Function to cancel an order and get a refund (only if not delivered)
-    function cancelOrder(uint256 orderId) public {
-        Order storage order = orders[orderId];
-        require(order.id == orderId, "Order does not exist."); // Require a valid order ID
-        require(order.customer == msg.sender, "Only the customer can cancel."); // Require sender to be the customer
-        require(!order.isDelivered, "Cannot cancel a delivered order."); // Require the order is not yet delivered
+    // Withdraw funds from the contract
+    function withdrawFunds() external onlyOwner {
+        uint256 balance = address(this).balance;
+        require(balance > 0, "No funds available for withdrawal.");
 
-        uint256 refundAmount = order.price;
-        delete orders[orderId];
-        (bool success, ) = payable(msg.sender).call{value: refundAmount}("");
-        if (!success) {
-            revert("Refund transfer failed."); // Revert if the refund transfer fails
-        }
+        (bool success, ) = payable(contractOwner).call{value: balance}("");
+        require(success, "Error: Withdrawal failed.");
+
+        emit FundsWithdrawn(contractOwner, balance);
+    }
+
+    // View card details
+    function getCardDetails(uint256 cardId) external view returns (uint256, string memory, uint256, address) {
+        require(cardId > 0 && cardId <= cardCounter, "Error: Card ID does not exist.");
+        Card memory card = cardCollection[cardId];
+        return (card.id, card.name, card.price, card.owner);
     }
 }
