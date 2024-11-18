@@ -35,7 +35,7 @@ contract TradingCardDistributor {
         cardCollection[cardCounter] = Card({
             id: cardCounter,
             name: name,
-            price: price, // Set the price for the card
+            price: price, 
             owner: address(0) // Initially, no owner
         });
 
