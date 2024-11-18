@@ -110,10 +110,10 @@ Revert Statements
 
 ### Tests
 ## Test Cases
-- 1. **Minting a Card**: Owner creates a card with valid name and price (pass).
-- 2. **Purchasing a Card**: User purchases an available card with exact Ether (pass).
-- 3. **Duplicate Purchases**: Attempting to purchase an already owned card (fail).
-- 4. **Withdrawing Funds**: Owner withdraws all Ether after purchases (pass).
+1. **Minting a Card**: Owner creates a card with valid name and price (pass).
+2. **Purchasing a Card**: User purchases an available card with exact Ether (pass).
+3. **Duplicate Purchases**: Attempting to purchase an already owned card (fail).
+4. **Withdrawing Funds**: Owner withdraws all Ether after purchases (pass).
 ---
 
 ## Contributors
